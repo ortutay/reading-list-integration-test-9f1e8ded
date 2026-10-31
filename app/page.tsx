@@ -125,6 +125,18 @@ export default function ReadingList() {
     setNotice('Book restored.');
   }
 
+  async function copyUnreadTitles() {
+    const unread = books.filter(book => !book.read);
+    if (!ready || unread.length === 0) return;
+    setNotice('');
+    try {
+      await navigator.clipboard.writeText(unread.map(book => book.title).join('\n'));
+      setNotice('Unread titles copied.');
+    } catch {
+      setNotice('Could not copy unread titles. Clipboard access may be unavailable or denied.');
+    }
+  }
+
   function exportBooks() {
     try {
       const blob = new Blob([encodeBackup(books)], { type: 'application/json' });
@@ -192,6 +204,7 @@ export default function ReadingList() {
           <span className="muted">{readCount} read · {books.length - readCount} to go</span>
         </div>
         <div className="tools">
+          <button type="button" onClick={copyUnreadTitles} disabled={!ready || books.length === readCount}>Copy unread titles</button>
           <div className="filters" role="group" aria-label="Filter by read status">
             {(['all', 'unread', 'read'] as Filter[]).map(option => (
               <button type="button" key={option} aria-pressed={filter === option} onClick={() => setFilter(option)}>{option === 'all' ? 'All' : option === 'unread' ? 'Unread' : 'Read'}</button>
